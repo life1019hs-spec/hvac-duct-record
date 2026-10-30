@@ -1,0 +1,365 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HVAC 複合型風管紀錄與數量統計</title><style>
+:root{font-family:system-ui,-apple-system,"Microsoft JhengHei","PingFang TC",sans-serif;color:#213247;background:#f4f5f8}*{box-sizing:border-box}body{margin:0}header{background:linear-gradient(115deg,#252c47,#53618e);color:#fff;padding:23px max(16px,calc((100vw - 1180px)/2))}header h1{font-size:clamp(22px,3.5vw,30px);margin:4px 0 7px}header p{color:#e3e9f7;font-size:13px;margin:0}.shell{max-width:1180px;margin:0 auto;padding:16px 14px 60px}.tabs{display:flex;gap:8px;position:sticky;top:0;background:#f4f5f8;padding:10px 0;z-index:9}.tab{background:#e6e9f2;color:#394465;border:0;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer;flex:1}.tab.active{background:#303b61;color:#fff}.card{background:#fff;border:1px solid #e0e5ef;border-radius:15px;padding:18px;margin-bottom:14px;box-shadow:0 3px 12px #1b27430b}h2{font-size:19px;color:#303b61;margin:0 0 12px}h3{font-size:16px;margin:12px 0 8px}.muted{color:#617086;font-size:13px;line-height:1.65}.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field{min-width:0}label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}input,select{background:#fff;width:100%;border:1px solid #c8d2df;padding:12px 10px;font-size:16px;border-radius:10px;color:#25334a;min-width:0}input:focus,select:focus{outline:2px solid #8599ca}.wide{grid-column:1/-1}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}button{border:0;border-radius:10px;padding:11px 15px;background:#3c5184;color:white;font-weight:700;font-size:14px;cursor:pointer}button.secondary{background:#e7eaf3;color:#293b64}button.danger{background:#fff0ee;color:#a5392e}button:disabled{opacity:.5}.badges{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}.badge{background:#eef1f8;padding:10px 13px;border-radius:11px;color:#303c62}.badge strong{font-size:19px;display:block}.tablewrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px;min-width:680px}th{background:#edf1f6;color:#374764;text-align:left}th,td{padding:11px 9px;border-bottom:1px solid #e8ecf2}td button{padding:7px 10px;font-size:12px;margin:2px}details{border:1px solid #e0e5ef;border-radius:11px;padding:11px;margin:12px 0}summary{cursor:pointer;font-weight:700}.hide{display:none!important}.section{display:none}.section.active{display:block}.switchline{display:flex;align-items:center;gap:9px;margin-top:12px}.switchline input{width:20px}.note{background:#f7f8fc;border-left:4px solid #7c8eb6;padding:11px;font-size:13px;color:#536079;margin-top:10px}.macaron-box{border-radius:14px!important;padding:14px 16px!important;font-size:15px!important;font-weight:800!important;line-height:1.8!important;color:#4f4963!important;border-left:5px solid #8f8ac8!important;box-shadow:0 2px 8px rgba(130,120,170,.08)}#equipmentNote.macaron-box{background:#f3eefc!important}#airResult.macaron-box{background:#eef7f6!important;color:#46535f!important;border-left-color:#7cb8ae!important}#airResult.macaron-box strong{font-weight:800;color:#3f4762}.totals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{border:1px solid #e1e7ef;border-radius:12px;padding:13px;background:#f9fafc}.stat small{color:#67758a}.stat b{display:block;font-size:21px;margin-top:5px;color:#304368}.inline{display:flex;align-items:center;gap:6px}footer{font-size:12px;color:#647186;text-align:center;margin-top:25px}@media(max-width:750px){.fields{grid-template-columns:repeat(2,minmax(0,1fr))}.totals{grid-template-columns:1fr 1fr}header{padding:20px 15px}}@media(max-width:520px){.fields{grid-template-columns:1fr}.totals{grid-template-columns:1fr 1fr}.card{padding:14px}.tab{padding:12px 8px;font-size:14px}}
+.shape-choice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.shape-choice .shape-button{background:#f5f6fb;border:2px solid #d5dcec;color:#394567;font-weight:800;padding:15px 12px;border-radius:12px;min-height:55px}.shape-choice .shape-button.selected{background:#e5edff;border-color:#5066a1;color:#263b74;box-shadow:0 0 0 2px #e7ebf9 inset}.small-explain{background:#edf7f5;border:1px solid #b9ded6;border-radius:10px;padding:12px;font-weight:750;color:#345c57;line-height:1.6}@media(max-width:480px){.shape-choice{grid-template-columns:1fr}}
+
+.hrv-panel{background:#f2f7ff;border:1px solid #b9d3ed;border-radius:16px;padding:17px;margin-top:14px}
+.hrv-panel h3{margin:0 0 10px;color:#244a75}
+.hrv-panel .hrv-output{background:#eaf7f2;border-left:5px solid #67b6a6;border-radius:10px;padding:14px;margin-top:10px;line-height:1.85;color:#254b48;font-weight:700}
+.hrv-panel .hrv-warning{font-size:13px;color:#795c32;line-height:1.7;margin:10px 0 0}
+.hrv-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.hrv-actions button{width:auto}
+@media(max-width:620px){.hrv-actions button{width:100%}}
+#equipmentType{font-weight:650;background:#f4f8ff;border-color:#b5c6df}#equipmentOtherWrap label,#equipmentTag+label{font-size:13px}
+</style></head><body><header><div style="font-size:12px;letter-spacing:2px;opacity:.88">HVAC · ENGINEERING RECORD</div><h1>複合型風管紀錄與數量統計</h1><p>一台設備多種尺寸｜矩形、圓形混合登錄｜同尺寸自動合併｜手機與桌機共用</p></header><main class="shell"><div class="tabs"><button id="t1" class="tab active" onclick="page(1)">① 風管尺寸紀錄</button><button id="t2" class="tab" onclick="page(2)">② 材料數量統計</button></div>
+<section id="p1" class="section active">
+<div class="card"><h2>案件與設備主檔（每台只建一次）</h2><div class="fields"><div class="field"><label>案件名稱 *</label><input id="project" placeholder="例如：AA 廠房空調工程" oninput="metaChange()"></div><div class="field"><label>案件編號</label><input id="projectId" placeholder="例如：HVAC-001" oninput="metaChange()"></div><div class="field"><label>設計人員</label><input id="designer" placeholder="設計／計算人員" oninput="metaChange()"></div></div><h3>選擇並固定目前設備</h3><div class="fields"><div class="field"><label>選擇設備</label><select id="equipmentSelect" onchange="chooseEquipment()"></select></div><div class="field"><label>新增設備名稱／設備類別 *</label><select id="equipmentType" onchange="equipmentTypeChanged()"><option value="">請選擇設備類別</option><option value="落地式空調箱（AHU）">落地式空調箱（AHU）</option><option value="吊掛式空調箱（AHU）">吊掛式空調箱（AHU）</option><option value="臥式空調箱（AHU）">臥式空調箱（AHU）</option><option value="組合式空調箱（AHU）">組合式空調箱（AHU）</option><option value="全外氣空調箱（MAU）">全外氣空調箱（MAU）</option><option value="預冷空調箱（PAU）">預冷空調箱（PAU）</option><option value="直膨式空調箱（DX AHU）">直膨式空調箱（DX AHU）</option><option value="水冷式箱型空調機（PKG）">水冷式箱型空調機（PKG）</option><option value="氣冷式箱型空調機（PKG）">氣冷式箱型空調機（PKG）</option><option value="風機盤管（FCU）">風機盤管（FCU）</option><option value="吊隱式室內機（IDU）">吊隱式室內機（IDU）</option><option value="風管式室內機（IDU）">風管式室內機（IDU）</option><option value="全熱交換器（HRV）">全熱交換器（HRV）</option><option value="全熱交換器（ERV）">全熱交換器（ERV）</option><option value="新風淨化箱（FAF）">新風淨化箱（FAF）</option><option value="風管除濕機（DH）">風管除濕機（DH）</option><option value="排風機（EX）">排風機（EX）</option><option value="箱型風機（BF）">箱型風機（BF）</option><option value="離心式風機（CF）">離心式風機（CF）</option><option value="其他／自訂設備">其他／自訂設備</option></select><div id="equipmentOtherWrap" class="hide" style="margin-top:8px"><label for="equipmentOther">自訂設備名稱 *</label><input id="equipmentOther" placeholder="例如：特殊處理風機"></div><div style="margin-top:8px"><label for="equipmentTag">設備識別／容量（選填）</label><input id="equipmentTag" placeholder="例如：16RT、AHU-1、EX-1"></div></div><div class="field"><label>設備圖號</label><input id="drawing" placeholder="例如：M-201"></div><div class="field"><label>樓層／位置</label><input id="location" placeholder="例如：2F 機房"></div><div class="field" style="align-self:end"><button style="width:100%" onclick="addEquipment()">＋ 新增設備</button></div></div><div style="margin:10px 0"><button type="button" class="secondary" onclick="editEquipment(current)">✎ 編輯目前設備資料（名稱／圖號／位置）</button></div><div id="equipmentNote" class="note macaron-box">請先新增或選擇一台設備，再登錄它的多種尺寸。</div></div>
+<div class="card" id="hrvCatalogCard"><h2>全熱交換器｜廠牌及型號帶入（選填）</h2>
+<p class="muted">先從設備類別下拉清單選擇設備；同類設備可用設備識別與圖號區分。需要全熱交換器時，選擇廠牌與型號，即可帶入型錄額定風量，再依設計風速自動試算圓形風管管徑。</p>
+<div class="hrv-panel">
+<div class="fields">
+<div class="field"><label>設備類型</label><select id="hrvType" onchange="hrvTypeChanged()"><option value="general">一般設備／不使用型錄</option><option value="hrv">全熱交換器（型錄輔助）</option></select></div>
+<div class="field hrv-only hide"><label>全熱交換器廠牌</label><select id="hrvBrand" onchange="hrvBrandChanged()"><option value="">請選廠牌</option><option value="daikin">大金（VAM 系列）</option><option value="mhi">三菱重工（SAF 系列）</option><option value="taiyi">太一空調（TVF 系列）</option></select></div>
+<div class="field hrv-only hide"><label>設備型號</label><select id="hrvModel" onchange="hrvModelChanged()"><option value="">請先選擇廠牌</option></select></div>
+<div class="field hrv-only hide"><label>設計風速（m/s；試算用）</label><input id="hrvSpeed" type="number" min="0.1" step="0.1" value="4" oninput="hrvModelChanged()"></div>
+</div>
+<div id="hrvOutput" class="hrv-output hide" aria-live="polite"></div>
+<div class="hrv-actions hrv-only hide"><button type="button" onclick="hrvSaveEquipment()">儲存廠牌型號至目前設備</button><button type="button" class="secondary" onclick="hrvApplySizing()">↓ 帶入風量並計算圓管尺寸</button></div>
+<p class="hrv-warning hrv-only hide">※ 原廠接口尺寸與風管設計管徑是不同的資料：圓管建議依額定風量與自行設定風速計算，仍須檢核壓損、靜壓、噪音及原廠接管轉接。部分型錄未載明圓形接口，不會自行推定為原廠口徑。</p>
+</div></div>
+<div class="card" id="airSizing"><h2>依風量與風速計算風管尺寸（選填）</h2>
+<p class="muted">有設計風量時，先輸入風量及風速，再套用建議尺寸到下方風管紀錄；若已知圖面尺寸，可直接略過本區、在下方手動填寫。</p>
+<div class="fields">
+<div class="field"><label>風量數值</label><input id="airFlow" type="number" min="0" step="any" placeholder="例如 7200" oninput="calculateAirSizing()"></div>
+<div class="field"><label>風量單位</label><select id="airUnit" onchange="calculateAirSizing()"><option value="CMH">CMH（m³/h）</option><option value="CMS">CMS（m³/s）</option><option value="CMM">CMM（m³/min）</option><option value="CFM">CFM（ft³/min）</option><option value="LS">L/s（公升／秒）</option></select></div>
+<div class="field"><label>設計風速（m/s）</label><input id="airSpeed" type="number" min="0" step="any" value="6" oninput="calculateAirSizing()"></div>
+<div class="field full"><label>先選風管形狀（再決定需要輸入哪些尺寸）</label><div class="shape-choice" role="group" aria-label="風管形狀"><button type="button" id="chooseRect" class="shape-button selected" aria-pressed="true" onclick="selectAirShape('rect')">▣ 矩形鐵皮風管</button><button type="button" id="chooseRound" class="shape-button" aria-pressed="false" onclick="selectAirShape('round')">◯ 圓形／螺旋風管</button></div><select id="airShape" style="display:none" aria-label="目前選擇風管形狀"><option value="rect">矩形鐵皮風管</option><option value="round">圓形／螺旋風管</option></select></div>
+<div class="field" id="airStepWrap"><label>矩形尺寸進位級距（mm）</label><select id="airStep" onchange="calculateAirSizing()"><option value="25">25</option><option value="50" selected>50（初步建議）</option><option value="100">100</option></select></div>
+<div class="field" id="airWidthWrap"><label>矩形預定寬度（mm）</label><input id="airWidth" type="number" min="1" step="any" value="600" oninput="if(this.value!=='')document.getElementById('width').value=this.value;calculateAirSizing()"></div><div class="field hide" id="roundHint"><label>圓形管徑計算</label><div class="small-explain">只需要風量與風速，系統自動計算理論直徑，並以 50 mm 向上進位。</div></div>
+</div>
+<div id="airResult" class="note macaron-box" style="margin:12px 0">請輸入風量與設計風速，即可推算所需截面積與風管尺寸。</div>
+<div class="actions"><button type="button" class="secondary" onclick="applyAirSizing()">↓ 套用建議尺寸至下方紀錄</button></div>
+<p class="muted">風量換算與尺寸計算為初步設計，正式尺寸仍需依壓損、噪音、製作規格與現場空間確認；按「加入此設備風管」後才會存入設備紀錄。</p>
+</div>
+<div class="card"><h2>新增風管尺寸</h2><p class="muted">先固定上方設備，再選擇這一筆風管的系統；同一台設備可連續記錄送風、回風及新風等不同系統。</p><div class="fields"><div class="field"><label>本筆風管系統類別</label><select id="ductSystem"><option>送風 SA</option><option>回風 RA</option><option>新風 OA</option><option>排風 EA</option><option>補風 MA</option><option>其他</option></select></div><div class="field"><label>風管形狀</label><select id="shape" onchange="shapeChange()"><option value="rect">矩形鐵皮風管</option><option value="round">圓形／螺旋風管</option></select></div><div class="field rect"><label>寬 W（mm）</label><input id="width" type="number" min="1" placeholder="例如 1000"></div><div class="field rect"><label>高 H（mm）</label><input id="height" type="number" min="1" placeholder="例如 500"></div><div class="field round hide"><label>圓管直徑 Ø（mm）</label><select id="diameter"><option value="100">Ø100</option><option value="125">Ø125</option><option value="150">Ø150</option><option value="160">Ø160</option><option value="200">Ø200</option><option value="250">Ø250</option><option value="300">Ø300</option><option value="315">Ø315</option><option value="350">Ø350</option><option value="400">Ø400</option><option value="450">Ø450</option><option value="500">Ø500</option><option value="600">Ø600</option><option value="630">Ø630</option><option value="700">Ø700</option><option value="800">Ø800</option><option value="900">Ø900</option><option value="1000">Ø1000</option><option value="custom">自訂管徑</option></select></div><div id="diaCustomWrap" class="field round hide"><label>自訂直徑（mm）</label><input id="diaCustom" type="number" min="1" placeholder="例如 550"></div><div class="field"><label>每段／每支長度（m）</label><input id="length" type="number" min="0.001" step="any" value="3"></div><div class="field"><label>數量（段／支）</label><input id="qty" type="number" min="1" step="1" value="1"></div><div class="field"><label>用途或備註</label><input id="note" placeholder="例如：出風主幹管"></div></div><div class="card" style="margin-top:16px;background:#f7fafc;box-shadow:none"><label style="display:flex;align-items:center;gap:9px;cursor:pointer"><input type="checkbox" id="useLouver" onchange="toggleLouver()" style="width:20px;height:20px"> 這筆風管需要通風百葉（選填）</label><div id="louverFields" class="hide"><p class="muted">通風百葉獨立使用本筆風量及自由面積風速計算，不會影響風管尺寸與鐵皮數量。可選擇矩形或圓形百葉。</p><div class="fields"><div class="field"><label>百葉風量</label><input id="louverFlow" type="number" min="0" step="any" placeholder="例如 7200"></div><div class="field"><label>風量單位</label><select id="louverUnit"><option value="CMH">CMH</option><option value="CMS">CMS</option><option value="CMM">CMM</option><option value="CFM">CFM</option><option value="LS">L/s</option></select></div><div class="field"><label>百葉自由面積風速（m/s）</label><input id="louverSpeed" type="number" value="2.5" min="0.01" step="any"></div><div class="field"><label>百葉通風率（%）</label><input id="louverRate" type="number" value="60" min="1" max="100" step="any"></div><div class="field"><label>百葉形狀</label><select id="louverShape" onchange="toggleLouverShape()"><option value="rect">矩形百葉</option><option value="round">圓形百葉</option></select></div><div class="field" id="louverWidthWrap"><label>矩形百葉指定寬度（mm）</label><input id="louverWidth" type="number" value="1000" min="1"></div></div><div class="actions"><button type="button" class="secondary" onclick="calculateLouver()">計算百葉建議尺寸</button></div><div id="louverResult" class="muted" aria-live="polite">請輸入百葉風量、通風率及設計風速，再按計算。</div></div></div><div class="actions"><button id="itemSubmitBtn" onclick="addItem()">＋ 加入此設備風管</button><button class="secondary" id="itemResetBtn" onclick="cancelItemEdit()">清空這筆輸入</button></div><p class="muted">各筆風管會歸到目前所選設備；同一台可同時登錄多種矩形尺寸及不同直徑圓管。材料數量統計會在第二頁依同尺寸合併。</p></div>
+<div class="card"><h2>目前設備風管尺寸紀錄（含送風／回風／新風） <span id="currentCount" class="muted"></span></h2><div class="tablewrap"><table><thead><tr><th>系統</th><th>形狀</th><th>尺寸</th><th>單支長度</th><th>數量</th><th>延米</th><th>百葉（選填）</th><th>備註</th><th>操作</th></tr></thead><tbody id="deviceRows"></tbody></table></div><div class="actions"><button class="secondary" onclick="page(2)">查看第二頁材料統計 →</button></div></div></section>
+<section id="p2" class="section"><div class="card"><h2>整案材料統計</h2><div class="totals"><div class="stat"><small>矩形風管總延米</small><b id="totalRect">0 m</b></div><div class="stat"><small>矩形直管理論鐵皮面積</small><b id="totalArea">0 m²</b></div><div class="stat"><small>圓形風管總延米</small><b id="totalRound">0 m</b></div><div class="stat"><small>設備數</small><b id="equipCount">0</b></div></div><div class="fields" style="margin-top:16px"><div class="field"><label>統計範圍</label><select id="filter" onchange="renderSummary()"><option value="all">整個案件（全部設備）</option></select></div><div class="field"><label for="wasteMode">鐵皮裁切損耗預留（估料模式）</label>
+<select id="wasteMode" onchange="changeWasteMode()">
+<option value="0">僅理論面積｜0%</option>
+<option value="3">簡單直管｜3%</option>
+<option value="5" selected>一般矩形風管｜5%（建議）</option>
+<option value="8">多種尺寸、裁切較複雜｜8%</option>
+<option value="10">特殊加工初估｜10%</option>
+<option value="custom">自行設定</option>
+</select>
+<div id="wasteCustomBox" class="hide" style="margin-top:9px"><label for="waste">自行設定損耗率（%）</label><input id="waste" type="number" min="0" max="100" value="5" step="0.5" oninput="customWasteChange()"></div>
+</div><div class="field"><label>卷料寬度（m）</label><select id="roll" onchange="metaChange();renderSummary()"><option value="1">1.000 m</option><option value="1.219">1.219 m</option><option value="1.5">1.500 m</option></select></div></div><details style="margin-top:12px"><summary>什麼是鐵皮裁切損耗？查看新人建議</summary><div class="note" style="margin-top:8px">損耗是製作直管時裁切、接縫等可能增加的材料預留，<strong>不是風量損失或漏風率</strong>。初步估料可選：0% 僅理論面積；3% 單純直管；<strong>5% 一般矩形風管（預設）</strong>；8% 多尺寸裁切；10% 特殊加工初估。這些只是估算假設，非固定施工標準。正式採購須依鐵皮規格、加工方式及廠商實際用料確認，彎頭、三通、變徑、法蘭及補強另計，避免重複估算。</div></details>
+<div class="note">相同尺寸自動合併（矩形 1000×500 與 500×1000 視為同尺寸）。直管鐵皮面積＝2×（寬＋高）×總延米；圓形管統計成品延米，不與鐵皮面積混加。</div></div>
+<div class="card" id="caiConverterCard"><h2>鐵皮面積換算｜m² ⇄ 才</h2>
+<p class="muted">風管材料預設採英才（平方英尺）；如廠商依台尺報價，可切換台才。只轉換面積單位，不影響原有米數、張數及材料紀錄。</p>
+<div class="fields"><div class="field"><label>「才」換算基準</label><select id="caiBasis" onchange="updateCai();renderSummary()"><option value="ft">風管英才｜1 才 = 1 ft²</option><option value="tai">台才｜1 才 = 1 台尺²</option></select></div>
+<div class="field"><label>輸入平方公尺（m²）</label><input id="caiM2" type="number" min="0" step="any" value="1" oninput="convertCai('m2')"></div>
+<div class="field"><label>換算結果：才</label><input id="caiValue" type="number" min="0" step="any" oninput="convertCai('cai')"></div></div>
+<div class="note" id="caiHint">1 m² ≈ 10.7639 風管英才。</div>
+</div>
+<div class="card"><h2>矩形風管材料整合表｜同尺寸合併</h2><p class="muted">同一尺寸自動合併；包含板厚番號、延米、理論面積及含損耗才數。板厚欄位可選擇人工覆寫；實際支數須依每筆紀錄的長度與數量確認。</p><div class="tablewrap"><table><thead><tr><th>風管尺寸（mm）</th><th>累計延米</th><th>板厚（可覆寫）</th><th>理論 m²</th><th>含損耗 m²</th><th>含損耗（才）</th></tr></thead><tbody id="unifiedRows"></tbody></table></div><details style="margin-top:14px"><summary style="cursor:pointer;font-weight:750;color:#3f557b">展開進階明細（紀錄段數、理論才數、卷料等效延米）</summary><div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>尺寸（mm）</th><th>紀錄段數／支數</th><th>累計延米</th><th>理論鐵皮 m²</th><th>理論鐵皮（才）</th><th>含損耗 m²</th><th>含損耗（才）</th><th>等效卷料延米</th></tr></thead><tbody id="rectRows"></tbody></table></div><p class="muted">等效卷料延米是含損耗面積 ÷ 設定卷寬，不等於現場施工長度；「紀錄段數／支數」依輸入數量加總。</p></details></div>
+
+<div class="card" id="materialEstimateCard">
+<h2>材料採購估算（選填）｜板厚、張數與保溫</h2>
+<p class="muted">依上方已登錄的矩形風管尺寸及長度，自動帶入直管理論展開面積；不同板厚分開彙總。**張數為面積除以板材面積後無條件進位的初估，不代表實際裁切排版張數。**</p>
+<details open><summary>① 依尺寸自動帶入板厚番號（26#～18#）</summary>
+<p class="note" style="padding:10px;background:#fff4df;border-radius:10px">已依上傳《風管計算表.xlsx》材料表 K9:K96 的公式設定：以風管長邊（英吋）分界 12／30／60／90 吋，自動判定 26#／24#／22#／20#，超過 90 吋為 18#。下方顯示等值 mm；仍可人工覆寫特殊規格。</p>
+<div class="fields" style="margin:10px 0"><div class="field"><label>判定尺寸基準</label><select id="gaugeBasis" onchange="gaugeConfigChanged()"><option value="long">風管長邊（mm）</option><option value="perimeter">風管周長（mm；自訂規則）</option></select></div><div class="field"><label>自動規則</label><select id="gaugeAuto" onchange="gaugeConfigChanged()"><option value="on">依 Excel 原公式自動帶出 #</option><option value="off">全部手動選取</option></select></div></div>
+<div class="tablewrap"><table><thead><tr><th>番號</th><th>Excel 長邊分界上限（mm；換算自英吋）</th></tr></thead><tbody>
+<tr><td>26#</td><td><input type="number" id="gaugeMax26" min="1" value="304.8" onchange="gaugeConfigChanged()"></td></tr>
+<tr><td>24#</td><td><input type="number" id="gaugeMax24" min="1" value="762" onchange="gaugeConfigChanged()"></td></tr>
+<tr><td>22#</td><td><input type="number" id="gaugeMax22" min="1" value="1524" onchange="gaugeConfigChanged()"></td></tr>
+<tr><td>20#</td><td><input type="number" id="gaugeMax20" min="1" value="2286" onchange="gaugeConfigChanged()"></td></tr>
+<tr><td>18#</td><td>長邊超過 90 吋（2286 mm）</td></tr>
+</tbody></table></div>
+<p class="muted">板厚分配已整合至上方「矩形風管材料整合表」，下方依板厚加總面積及估算張數。</p><div id="gaugeAssignRows" style="display:none"></div>
+<p class="note">板厚依公司 Excel 現有公式自動判定，該公式只使用長邊，未考慮壓力等級、加勁、管材及其他製作規範；正式製作請再檢核。</p></details>
+<details><summary>② 鐵皮張數與板厚分類統計</summary>
+<div class="fields" style="margin-top:12px"><div class="field"><label>單張鐵皮長度（ft）</label><input id="matSheetL" type="number" min="0.1" step="any" value="7" oninput="renderMaterialEst()"></div><div class="field"><label>單張鐵皮寬度（ft）</label><input id="matSheetW" type="number" min="0.1" step="any" value="3" oninput="renderMaterialEst()"></div></div>
+<div class="tablewrap"><table><thead><tr><th>板厚</th><th>直管延米</th><th>含預留面積 m²</th><th>理論整張數（進位）</th></tr></thead><tbody id="gaugeSummaryRows"></tbody></table></div>
+<p class="note">以 3×7 ft 為預設規格；此處總張數先依板厚合併面積後進位，尚未考慮裁切方向、板寬利用率、搭接、法蘭、彎頭等。採購前請以工廠排版確認。</p></details>
+<details><summary>③ 保溫面積及「才」換算（獨立）</summary>
+<div class="fields" style="margin-top:12px"><div class="field"><label>保溫覆蓋比例（%）</label><input id="matInsulPct" type="number" min="0" max="100" step="1" value="100" oninput="renderMaterialEst()"></div><div class="field"><label>保溫裁切預留（%）</label><input id="matInsulWaste" type="number" min="0" max="100" step="1" value="5" oninput="renderMaterialEst()"></div></div>
+<div id="insulResult" class="note" style="margin-top:10px;font-weight:800;background:#f1f8ed">尚無矩形直管。</div><p class="note">保溫估算依矩形直管外表面積計，未計保溫厚度增加的外周長，也未計法蘭、補強、管件等；換算基準沿用本頁「才」選擇。</p></details>
+<details><summary>④ 彎頭／三通／四通等效米數（自行設定）</summary>
+<p class="muted">此為獨立補充估算，不直接併入上方直管及鐵皮張數，避免無法確認的等效係數造成重複計算。</p>
+<div class="tablewrap"><table><thead><tr><th>管件</th><th>數量</th><th>每件等效延米（m，可自訂）</th><th>估算延米</th></tr></thead><tbody>
+<tr><td>彎頭</td><td><input id="fitElbowQty" type="number" min="0" value="0" oninput="renderMaterialEst()"></td><td><input id="fitElbowM" type="number" min="0" step="any" placeholder="自行填入" oninput="renderMaterialEst()"></td><td id="fitElbowResult">—</td></tr>
+<tr><td>三通</td><td><input id="fitTeeQty" type="number" min="0" value="0" oninput="renderMaterialEst()"></td><td><input id="fitTeeM" type="number" min="0" step="any" placeholder="自行填入" oninput="renderMaterialEst()"></td><td id="fitTeeResult">—</td></tr>
+<tr><td>四通</td><td><input id="fitCrossQty" type="number" min="0" value="0" oninput="renderMaterialEst()"></td><td><input id="fitCrossM" type="number" min="0" step="any" placeholder="自行填入" oninput="renderMaterialEst()"></td><td id="fitCrossResult">—</td></tr>
+</tbody></table></div><div class="note" id="fitTotal">等效米數尚未設定。</div>
+</details>
+<div class="actions"><button type="button" class="secondary" onclick="exportMaterialCSV()">匯出板厚／保溫估料 CSV</button></div>
+</div>
+<div class="card"><h2>圓形／螺旋風管：同管徑合併</h2><div class="tablewrap"><table><thead><tr><th>管徑</th><th>總支數</th><th>累計延米</th></tr></thead><tbody id="roundRows"></tbody></table></div></div>
+<div class="card"><h2>通風百葉紀錄（選填）</h2><p class="muted">僅統計有勾選百葉的風管紀錄；百葉面積不併入鐵皮面積。</p><div class="tablewrap"><table><thead><tr><th>設備</th><th>系統</th><th>百葉形狀／尺寸</th><th>通風率</th><th>所需總面積</th></tr></thead><tbody id="louverRows"></tbody></table></div></div><div class="card"><h2>依設備分組小計</h2><div class="tablewrap"><table><thead><tr><th>設備</th><th>圖號</th><th>矩形延米</th><th>鐵皮理論 m²</th><th>圓形延米</th><th>操作</th></tr></thead><tbody id="equipRows"></tbody></table></div></div><div class="card" style="margin-top:14px"><h2>依設備與送回風系統小計</h2><p class="muted">同一台設備的 SA、RA、OA、EA、MA 分開顯示；相同尺寸採購彙總仍在上方依尺寸合併。</p><div class="tablewrap"><table><thead><tr><th>設備</th><th>系統</th><th>矩形延米</th><th>鐵皮理論 m²</th><th>圓形延米</th></tr></thead><tbody id="systemRows"></tbody></table></div></div><div class="actions"><button class="secondary" onclick="page(1)">← 返回第一頁新增尺寸</button></div></section>
+<div class="card"><h2>最後一步｜儲存與匯出</h2><p class="muted">資料會自動儲存在本機目前瀏覽器。不同手機／電腦不會自動同步，請定期下載 JSON 備份；若要換裝置接續編輯，再匯入備份。GitHub Pages 只負責提供程式網址，不會保存你輸入的工程資料。</p><div class="actions"><button onclick="exportCSV()">匯出同尺寸彙總 CSV</button><button onclick="exportJSON()" class="secondary">備份案件 JSON</button><button onclick="document.getElementById('importFile').click()" class="secondary">匯入案件 JSON</button><button onclick="window.print()" class="secondary">列印／存成 PDF</button><button onclick="clearProject()" class="danger">清空整案</button></div><input class="hide" type="file" id="importFile" accept=".json,application/json" onchange="importJSON(event)"><div id="message" class="muted" aria-live="polite"></div></div><footer>HVAC 複合型風管紀錄 3.6｜直管估算，不含彎頭、三通、變徑、法蘭與實際裁切排版耗損；正式數量請依施工圖查核。</footer></main>
+<dialog id="equipEditor" style="border:1px solid #cad4e2;border-radius:14px;max-width:460px;width:calc(100% - 28px);padding:22px;box-shadow:0 12px 40px #25365133"><h2 style="margin-top:0">編輯設備資料</h2><p class="note">修改設備名稱或圖號後，第一頁與第二頁會同步更新，原有風管資料不會被刪除。</p><div class="fields" style="grid-template-columns:1fr"><div class="field"><label>設備名稱</label><input id="editEquipName"></div><div class="field"><label>圖號</label><input id="editEquipDrawing" placeholder="例如 AHU-1"></div><div class="field"><label>樓層／位置</label><input id="editEquipLocation"></div></div><div class="actions" style="margin-top:16px"><button type="button" onclick="saveEquipmentEdit()">儲存修改</button><button type="button" class="secondary" onclick="document.getElementById('equipEditor').close()">取消</button></div></dialog>
+<script>
+'use strict';const $=id=>document.getElementById(id);
+function currentWaste(){const sel=$('wasteMode').value;return Math.min(100,Math.max(0,Number(sel==='custom'?$('waste').value:sel)||0))}
+function applyWasteMode(value){const x=Number(value);const allowed=[0,3,5,8,10];$('wasteMode').value=allowed.includes(x)?String(x):'custom';$('waste').value=Number.isFinite(x)?x:5;$('wasteCustomBox').classList.toggle('hide',$('wasteMode').value!=='custom')}
+function changeWasteMode(){$('wasteCustomBox').classList.toggle('hide',$('wasteMode').value!=='custom');metaChange();renderSummary()}
+function customWasteChange(){metaChange();renderSummary()}
+const KEY='hvac_hybrid_duct_v1';let data={project:'',projectId:'',designer:'',waste:5,roll:1.219,equipments:[],items:[]};let current='';const fmt=(v,n=2)=>Number(v||0).toLocaleString('zh-TW',{minimumFractionDigits:n,maximumFractionDigits:n});const number=x=>Number(x);const nameOf=e=>`${e.name}｜${e.drawing||'無圖號'}`;const msg=s=>$('message').textContent=s;
+// 製造商型錄：原廠風口與設計圓管尺寸分開顯示。
+const HRV_CATALOG={
+  daikin:{name:'大金 VAM',models:[
+    ['VAM150HVLT',150,'圓形 Ø100 mm','原廠型錄：連接風管直徑，150 型'],
+    ['VAM250HVLT',250,'圓形 Ø150 mm','原廠型錄：連接風管直徑，250 型'],
+    ['VAM350HVLT',350,'圓形 Ø150 mm','原廠型錄：連接風管直徑，350 型'],
+    ['VAM500HVLT',500,'圓形 Ø200 mm','原廠型錄：連接風管直徑，500 型'],
+    ['VAM650HVLT',650,'圓形 Ø200 mm','原廠型錄：連接風管直徑，650 型'],
+    ['VAM800HVLT',800,'圓形 Ø200 mm','原廠型錄：連接風管直徑，800 型'],
+    ['VAM1000HVLT',1000,'圓形 Ø250 mm','原廠型錄：連接風管直徑，1000 型'],
+    ['VAM1500HVLT',1500,'室內端 Ø250 mm × 4；室外端 長圓形 680 × 290 mm × 2','原廠型錄：1500 型多接口，不可當成單支 Ø250 風管'],
+    ['VAM2000HVLT',2000,'室內端 Ø250 mm × 4；室外端 長圓形 680 × 290 mm × 2','原廠型錄：2000 型多接口，不可當成單支 Ø250 風管']
+  ]},
+  mhi:{name:'三菱重工 SAF',models:[
+    ['SAF150EM1T',150,'圓形 6吋（內徑140 mm，外徑145 mm）','型錄第3頁，高速額定150 CMH'],
+    ['SAF250EM1T',250,'圓形 6吋（內徑140 mm，外徑145 mm）','型錄第3頁，高速額定250 CMH'],
+    ['SAF350EM1T',350,'圓形 6吋（內徑140 mm，外徑145 mm）','型錄第3頁，高速額定350 CMH'],
+    ['SAF500EM1T',500,'圓形 8吋（內徑190 mm，外徑194 mm）','型錄第3頁，高速額定500 CMH'],
+    ['SAF650EM1T',650,'圓形 10吋（內徑246 mm，外徑250 mm）','型錄第3頁，高速額定650 CMH'],
+    ['SAF800EM1T',800,'圓形 10吋（內徑246 mm，外徑250 mm）','型錄第3頁，高速額定800 CMH'],
+    ['SAF1000EM1T',1000,'圓形 10吋（內徑246 mm，外徑250 mm）','型錄第3頁，高速額定1000 CMH']
+  ]},
+  taiyi:{name:'太一空調 TVF',models:[
+    ['TVF-250S',250,'圓形 Ø150 mm；風口規格 150-80 mm（6吋）','2026 太一型錄第7頁（全熱標準型）'],
+    ['TVF-350S',350,'圓形 Ø150 mm；風口規格 150-80 mm（6吋）','2026 太一型錄第7頁（全熱標準型）'],
+    ['TVF-500S',500,'圓形 Ø200 mm；風口規格 200-75 mm（8吋）','2026 太一型錄第7頁（全熱標準型）'],
+    ['TVF-1000S',1000,'圓形 Ø250 mm；風口規格 250-80 mm（10吋）','2026 太一型錄第7頁（全熱標準型）'],
+    ['TVF-250L',250,'圓形 Ø150 mm；風口規格 150-80 mm（6吋）','2026 太一型錄第7頁（全熱豪華型）'],
+    ['TVF-350L',350,'圓形 Ø150 mm；風口規格 150-80 mm（6吋）','2026 太一型錄第7頁（全熱豪華型）'],
+    ['TVF-500L',500,'圓形 Ø200 mm；風口規格 200-75 mm（8吋）','2026 太一型錄第7頁（全熱豪華型）']
+  ]}
+};
+// 依原廠型錄「名目接口規格」套入接管尺寸；不得以計算風速的尺寸替代。
+// 大金 VAM 單口名目規格由型錄帶入；1500/2000 型為多口，不自動帶成單一尺寸。
+// 三菱重工 SAF: 6/8/10 吋為名目接口，對應 Ø150/200/250 的記錄用管徑。
+// 型錄實際接管外徑須與連接套管確認；太一 TVF 以風口尺寸前項為名目圓形口徑，後項保留原廠標示。
+function hrvNominalPort(z){
+ if(!z)return null;
+ if(z.brand==='daikin'){
+  const vam=Number((z.model.match(/^VAM(\d+)HVLT$/)||[])[1]);
+  return ({150:100,250:150,350:150,500:200,650:200,800:200,1000:250})[vam]||null;
+ }
+ if(z.brand==='taiyi'){
+  return ({'TVF-250S':150,'TVF-350S':150,'TVF-500S':200,'TVF-1000S':250,'TVF-250L':150,'TVF-350L':150,'TVF-500L':200})[z.model]||null;
+ }
+ if(z.brand!=='mhi')return null;
+ if(/^SAF(150|250|350)EM1T$/.test(z.model)) return 150;
+ if(z.model==='SAF500EM1T') return 200;
+ if(/^SAF(650|800|1000)EM1T$/.test(z.model)) return 250;
+ return null;
+}
+function setHrvPortOnDuct(z){
+ const nominal=hrvNominalPort(z);
+ if(!nominal)return false;
+ $('shape').value='round';shapeChange();
+ const value=String(nominal), found=[...$('diameter').options].some(x=>x.value===value);
+ $('diameter').value=found?value:'custom';$('diaCustom').value=found?'':value;
+ customDiameter();
+ return true;
+}
+function hrvData(){const brand=$('hrvBrand').value,model=$('hrvModel').value;const rec=HRV_CATALOG[brand]?.models.find(x=>x[0]===model);return rec?{brand,model,flow:rec[1],port:rec[2],source:rec[3]}:null;}
+function hrvTypeChanged(){const active=$('hrvType').value==='hrv';document.querySelectorAll('.hrv-only').forEach(n=>n.classList.toggle('hide',!active));if(active){hrvBrandChanged(false)}else{$('hrvOutput').classList.add('hide')} }
+function hrvBrandChanged(reset=true){const b=$('hrvBrand').value,sel=$('hrvModel'),previous=sel.value;sel.innerHTML='<option value="">請選擇型號</option>'+(HRV_CATALOG[b]?.models||[]).map(x=>`<option value="${x[0]}">${x[0]}｜${x[1]} CMH</option>`).join('');if(!reset&&[...sel.options].some(x=>x.value===previous))sel.value=previous;hrvModelChanged()}
+function hrvModelChanged(){const z=hrvData();if(!z){$('hrvOutput').classList.add('hide');return}const v=Number($('hrvSpeed').value),valid=v>0&&Number.isFinite(v),dia=valid?Math.sqrt(4*(z.flow/3600)/(Math.PI*v))*1000:0,round=valid?Math.ceil((dia-1e-9)/50)*50:0;
+// 廠牌型號一旦選定，自動同步額定風量並更新下方風管管徑，不需另按套用。
+$('airFlow').value=z.flow;$('airUnit').value='CMH';
+if(valid){$('airSpeed').value=v;selectAirShape('round');calculateAirSizing();}else{calculateAirSizing();}if(hrvNominalPort(z))setHrvPortOnDuct(z);else { $('shape').value='round';shapeChange();$('diameter').value='custom';$('diaCustom').value='';customDiameter();}
+$('hrvOutput').classList.remove('hide');$('hrvOutput').innerHTML=`<div><strong>${HRV_CATALOG[z.brand].name}｜${z.model}</strong></div><div>型錄額定風量：<strong>${z.flow} CMH</strong>（${(z.flow/3600).toFixed(4)} CMS）</div><div>原廠接口：<strong>${z.port||'未確認（請查原廠接管圖）'}</strong></div><div>${hrvNominalPort(z)?`原廠名目接管口徑（已帶入下方紀錄）：<strong>Ø${hrvNominalPort(z)} mm</strong>；依風速 ${v} m/s 計算的主管建議 Ø${round} mm（兩者不同）`:z.brand==='daikin'?'此型號有多個接管口：請依各接口數量及形狀分別建立風管紀錄，不自動帶入單支管徑。':`原廠接口口徑未確認；${valid?`依風速計算的圓管參考 Ø${round} mm`:'請設定設計風速'}`} </div><div style="font-size:12px;color:#567">${z.source}</div>`;
+}
+function hrvSaveEquipment(){const z=hrvData();if(!z)return alert('請先選擇廠牌與型號。');const e=data.equipments.find(x=>x.id===current);if(!e)return alert('請先新增或選取目前設備。');e.hrv={...z};save();renderDevice();msg('全熱交換器廠牌與型號已儲存到目前設備。')}
+function hrvApplySizing(){const z=hrvData();if(!z)return alert('請選擇廠牌及型號。');const v=Number($('hrvSpeed').value);if(!(v>0))return alert('請輸入有效設計風速。');$('airFlow').value=z.flow;$('airUnit').value='CMH';$('airSpeed').value=v;selectAirShape('round');calculateAirSizing();if(hrvNominalPort(z))setHrvPortOnDuct(z);else if(z.brand==='daikin'){$('shape').value='round';shapeChange();$('diameter').value='custom';$('diaCustom').value='';customDiameter();}$('airSizing').scrollIntoView({behavior:'smooth',block:'start'});msg('已帶入型錄風量與設計風速。請確認計算結果後，按「套用建議尺寸至下方紀錄」。')}
+function hrvRestoreCurrent(){const e=data.equipments.find(x=>x.id===current),z=e?.hrv;if(z){$('hrvType').value='hrv';$('hrvBrand').value=z.brand||'';hrvTypeChanged();hrvBrandChanged();$('hrvModel').value=z.model||'';hrvModelChanged()}else{$('hrvType').value='general';hrvTypeChanged();}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data));msg('已自動儲存於本機瀏覽器。')}catch(e){msg('無法自動儲存，建議立即下載 JSON 備份。')}}
+function migrateLegacy(){
+ const ids=new Map(), unique=[];
+ for(const e of data.equipments){
+   const key=[String(e.name||'').trim().toLowerCase(),String(e.drawing||'').trim().toLowerCase(),String(e.location||'').trim().toLowerCase()].join('|');
+   const existing=unique.find(y=>[String(y.name||'').trim().toLowerCase(),String(y.drawing||'').trim().toLowerCase(),String(y.location||'').trim().toLowerCase()].join('|')===key);
+   if(existing){ids.set(e.id,existing.id)}else{unique.push(e);ids.set(e.id,e.id)}
+ }
+ const byId=new Map(data.equipments.map(e=>[e.id,e]));
+ for(const item of data.items){const old=byId.get(item.equipmentId);if(!item.system)item.system=old?.system||'送風 SA';item.equipmentId=ids.get(item.equipmentId)||item.equipmentId}
+ data.equipments=unique.map(({system,...rest})=>rest);
+}
+function load(){try{const raw=localStorage.getItem(KEY);if(raw){const x=JSON.parse(raw);if(x&&Array.isArray(x.equipments)&&Array.isArray(x.items))data={...data,...x}}}catch(e){} migrateLegacy(); $('project').value=data.project||'';$('projectId').value=data.projectId||'';$('designer').value=data.designer||'';applyWasteMode(data.waste??5);$('roll').value=String(data.roll||1.219);current=data.equipments[0]?.id||'';render()}
+function metaChange(){data.project=$('project').value;data.projectId=$('projectId').value;data.designer=$('designer').value;data.waste=currentWaste();data.roll=Number($('roll').value);save()}
+function page(n){$('p1').classList.toggle('active',n===1);$('p2').classList.toggle('active',n===2);$('t1').classList.toggle('active',n===1);$('t2').classList.toggle('active',n===2);if(n===2)renderSummary();window.scrollTo({top:0,behavior:'smooth'})}
+function equipmentTypeChanged(){const custom=$('equipmentType').value==='其他／自訂設備';$('equipmentOtherWrap').classList.toggle('hide',!custom)}
+function addEquipment(){const type=$('equipmentType').value;const custom=$('equipmentOther').value.trim();const tag=$('equipmentTag').value.trim();if(!type)return alert('請先選擇設備名稱／類別。');if(type==='其他／自訂設備'&&!custom)return alert('請輸入自訂設備名稱。');const base=type==='其他／自訂設備'?custom:type;const name=tag?base+'｜'+tag:base;const drawing=$('drawing').value.trim(),location=$('location').value.trim();if(data.equipments.some(e=>e.name.trim().toLowerCase()===name.toLowerCase()&&String(e.drawing||'').trim().toLowerCase()===drawing.toLowerCase()))return alert('已有相同設備名稱與圖號，請從上方選擇設備，再新增不同系統的風管。');const id='e'+Date.now()+Math.random().toString(36).slice(2,7);data.equipments.push({id,name,drawing,location});current=id;$('equipmentType').value='';$('equipmentOther').value='';$('equipmentTag').value='';equipmentTypeChanged();$('drawing').value='';$('location').value='';save();render();hrvRestoreCurrent();if(type.includes('全熱交換器')){$('hrvType').value='hrv';hrvTypeChanged();}}
+let editingEquipmentId=null;
+function editEquipment(id){const e=data.equipments.find(x=>x.id===id);if(!e)return alert('請先選擇設備。');editingEquipmentId=e.id;$('editEquipName').value=e.name||'';$('editEquipDrawing').value=e.drawing||'';$('editEquipLocation').value=e.location||'';$('equipEditor').showModal()}
+function saveEquipmentEdit(){const e=data.equipments.find(x=>x.id===editingEquipmentId);if(!e)return;const name=$('editEquipName').value.trim(),drawing=$('editEquipDrawing').value.trim();if(!name)return alert('設備名稱不可空白。');if(data.equipments.some(x=>x.id!==e.id&&x.name.trim().toLowerCase()===name.toLowerCase()&&String(x.drawing||'').trim().toLowerCase()===drawing.toLowerCase()))return alert('已有相同設備名稱與圖號。');e.name=name;e.drawing=drawing;e.location=$('editEquipLocation').value.trim();$('equipEditor').close();save();render();msg('設備主資料已更新，原有送回風紀錄都已保留。')}
+function chooseEquipment(){current=$('equipmentSelect').value;renderDevice();hrvRestoreCurrent()}
+let calculatedAir=null;
+function selectAirShape(value){$('airShape').value=value;airShapeChange()}
+function airShapeChange(){
+  const rect=$('airShape').value==='rect';
+  $('airWidthWrap').classList.toggle('hide',!rect);
+  $('airStepWrap').classList.toggle('hide',!rect);
+  $('roundHint').classList.toggle('hide',rect);
+  ['rect','round'].forEach((kind)=>{const b=$(kind==='rect'?'chooseRect':'chooseRound');b.classList.toggle('selected',kind===(rect?'rect':'round'));b.setAttribute('aria-pressed',String(kind===(rect?'rect':'round')))});
+  calculateAirSizing();
+}
+function autoFillDuctFromSizing(){
+  if(!calculatedAir)return;
+  const x=calculatedAir;
+  if(x.shape==='rect'){
+    if(x.width>0){$('shape').value='rect';shapeChange();$('width').value=x.width;}
+    if(x.width>0&&x.height>0)$('height').value=x.height;
+  }else if(x.roundD>0){
+    $('shape').value='round';shapeChange();
+    const d=String(x.roundD),opt=[...$('diameter').options].find(o=>o.value===d);
+    if(opt){$('diameter').value=d;$('diaCustom').value='';}
+    else{$('diameter').value='custom';$('diaCustom').value=d;}
+    customDiameter();
+  }
+}
+function calculateAirSizing(){
+  const q=Number($('airFlow').value),v=Number($('airSpeed').value),unit=$('airUnit').value,shape=$('airShape').value;
+  const factors={CMS:1,CMH:1/3600,CMM:1/60,CFM:0.028316846592/60,LS:0.001};
+  if(!($('airFlow').value.trim())||!(q>0)||!(v>0)){
+    calculatedAir=null;
+    $('airResult').textContent=shape==='rect'?'請先輸入風量、設計風速，再輸入矩形預定寬度以推算尺寸。':'請先輸入風量與設計風速，即可直接推算圓形風管直徑。';
+    return;
+  }
+  const cms=q*factors[unit],area=cms/v,step=Number($('airStep').value),width=Number($('airWidth').value);
+  const diameter=Math.sqrt(4*area/Math.PI)*1000,roundD=Math.ceil(diameter/50-1e-10)*50;
+  const roundV=(cms/(Math.PI*(roundD/1000)**2/4)).toFixed(2);
+  const height=width>0?Math.ceil(area*1e6/width/step-1e-10)*step:0;
+  const rectV=(width>0&&height>0)?(cms/(width*height/1e6)).toFixed(2):'';
+  calculatedAir={cms,area,width,height,roundD,diameter,shape,roundV,rectV};
+  // 兩區尺寸保持連動；不會新增或覆寫任何已儲存的風管紀錄。
+  autoFillDuctFromSizing();
+  // 全熱三菱型錄名目接管規格優先於風速計算管徑。
+  // 只有目前型號與風量相符才套入，避免覆寫一般設備或手動試算。
+  const hrvCurrent=hrvData();
+  if($('hrvType').value==='hrv' && hrvCurrent && hrvCurrent.flow===q && unit==='CMH' && shape==='round')setHrvPortOnDuct(hrvCurrent);
+  if(shape==='rect'){
+    const rect=height>0?`${width} × ${height} mm（實際風速 ${rectV} m/s）`:'請輸入有效的矩形寬度';
+    $('airResult').innerHTML=`<strong>換算後風量：</strong>${cms.toFixed(4)} CMS　｜　<strong>所需截面積：</strong>${area.toFixed(4)} m²<br><strong>矩形建議：</strong>${rect}<br><strong>圓形參考：</strong>Ø${roundD} mm（理論直徑 Ø${diameter.toFixed(1)} mm，實際風速 ${roundV} m/s）`;
+  }else{
+    $('airResult').innerHTML=`<strong>換算後風量：</strong>${cms.toFixed(4)} CMS　｜　<strong>所需截面積：</strong>${area.toFixed(4)} m²<br><strong>圓形建議：</strong>Ø${roundD} mm（理論直徑 Ø${diameter.toFixed(1)} mm，實際風速 ${roundV} m/s）<br><strong>說明：</strong>圓形模式不需要輸入矩形預定寬度，可直接套用到下方紀錄。`;
+  }
+}
+function applyAirSizing(){
+  calculateAirSizing();if(!calculatedAir)return alert('請先輸入有效風量與風速。');
+  $('shape').value=calculatedAir.shape;shapeChange();
+  if(calculatedAir.shape==='rect'){
+    if(!(calculatedAir.width>0&&calculatedAir.height>0))return alert('請先輸入有效的矩形寬度。');
+    $('width').value=calculatedAir.width;$('height').value=calculatedAir.height;
+  }else{
+    const d=String(calculatedAir.roundD),opt=Array.from($('diameter').options).find(o=>o.value===d);
+    if(opt){$('diameter').value=d;$('diaCustom').value=''}else{$('diameter').value='custom';$('diaCustom').value=d}
+    customDiameter();
+  }
+  $('airResult').insertAdjacentHTML('beforeend','<div style="margin-top:8px;font-weight:700;color:#315a40">已依您選擇的風管形狀套用至下方欄位，請再確認長度和數量，最後按「加入此設備風管」。</div>');
+}
+function shapeChange(){const rect=$('shape').value==='rect';document.querySelectorAll('.rect').forEach(x=>x.classList.toggle('hide',!rect));document.querySelectorAll('.round').forEach(x=>x.classList.toggle('hide',rect));customDiameter()}
+function customDiameter(){$('diaCustomWrap').classList.toggle('hide',$('shape').value!=='round'||$('diameter').value!=='custom')}
+$('diameter').addEventListener('change',customDiameter);
+let editingItemId=null;
+function toggleLouver(){$('louverFields').classList.toggle('hide',!$('useLouver').checked)}
+function toggleLouverShape(){$('louverWidthWrap').classList.toggle('hide',$('louverShape').value==='round')}
+function calculateLouver(){
+ if(!$('useLouver').checked)return null;
+ const q=Number($('louverFlow').value),v=Number($('louverSpeed').value),r=Number($('louverRate').value),w=Number($('louverWidth').value),u=$('louverUnit').value,shape=$('louverShape').value;
+ const factors={CMS:1,CMH:1/3600,CMM:1/60,CFM:0.028316846592/60,LS:.001};
+ if(!(q>0&&v>0&&r>0&&r<=100)){$('louverResult').textContent='請填寫正確的百葉風量、風速及 1～100% 通風率。';return null}
+ const cms=q*factors[u],free=cms/v,gross=free/(r/100),up=x=>Math.ceil((x-1e-8)/50)*50;
+ if(shape==='rect'&&!(w>0)){$('louverResult').textContent='請填寫矩形百葉寬度。';return null}
+ const h=shape==='rect'?up(gross*1e6/w):0,d=shape==='round'?up(Math.sqrt(4*gross/Math.PI)*1000):0;
+ const label=shape==='rect'?`${w} × ${h} mm`:`Ø${d} mm`;
+ $('louverResult').textContent=`建議${shape==='rect'?'矩形':'圓形'}百葉：${label}｜所需有效通風面積 ${free.toFixed(4)} m²｜百葉總面積 ${gross.toFixed(4)} m²`;
+ return {flow:q,unit:u,speed:v,rate:r,shape,w:shape==='rect'?w:0,h,d,freeArea:free,grossArea:gross,label};
+}
+function restoreLouver(x){const l=x?.louver;$('useLouver').checked=!!l;toggleLouver();if(!l){$('louverResult').textContent='請輸入百葉風量與設計條件。';return} $('louverFlow').value=l.flow;$('louverUnit').value=l.unit;$('louverSpeed').value=l.speed;$('louverRate').value=l.rate;$('louverShape').value=l.shape;$('louverWidth').value=l.w||1000;toggleLouverShape();calculateLouver()}
+
+function updateEditUI(){document.getElementById('itemSubmitBtn').textContent=editingItemId?'儲存修改（不新增）':'＋ 加入此設備風管';document.getElementById('itemResetBtn').textContent=editingItemId?'取消編輯':'清空這筆輸入';}
+function cancelItemEdit(){editingItemId=null;resetItem();updateEditUI()}
+function editItem(id){const x=data.items.find(y=>y.id===id);if(!x)return;current=x.equipmentId;editingItemId=id;$('shape').value=x.shape;shapeChange();$('width').value=x.shape==='rect'?x.w:'';$('height').value=x.shape==='rect'?x.h:'';if(x.shape==='round'){const option=[...$('diameter').options].find(o=>o.value===String(x.d));$('diameter').value=option?String(x.d):'custom';$('diaCustom').value=option?'':x.d;customDiameter()}$('length').value=x.length;$('qty').value=x.qty;$('note').value=x.note||'';$('ductSystem').value=x.system||'送風 SA';restoreLouver(x);render();updateEditUI();document.getElementById('shape').scrollIntoView({behavior:'smooth',block:'center'});msg('已載入原紀錄，修改後按「儲存修改（不新增）」。')}
+function resetItem(){restoreLouver(null);['width','height','note','diaCustom'].forEach(k=>$(k).value='');$('length').value=3;$('qty').value=1}
+function addItem(){if(!current)return alert('請先建立並選取設備。');const shape=$('shape').value,w=number($('width').value),h=number($('height').value),d=number($('diameter').value==='custom'?$('diaCustom').value:$('diameter').value),length=number($('length').value),qty=number($('qty').value);if(!(length>0)||!Number.isInteger(qty)||qty<1)return alert('長度需大於 0，數量需為正整數。');if(shape==='rect'&&(!(w>0)||!(h>0)))return alert('請輸入矩形風管寬與高。');if(shape==='round'&&!(d>0))return alert('請選擇有效圓管管徑。');const louver=$('useLouver').checked?calculateLouver():null;if($('useLouver').checked&&!louver)return alert('請先完成有效的百葉尺寸計算。');const val={louver,equipmentId:current,system:$('ductSystem').value,shape,w:shape==='rect'?w:0,h:shape==='rect'?h:0,d:shape==='round'?d:0,length,qty,note:$('note').value.trim()};if(editingItemId){const ix=data.items.findIndex(x=>x.id===editingItemId);if(ix<0){cancelItemEdit();return alert('原紀錄已不存在，請重新選擇。')}data.items[ix]={...data.items[ix],...val};editingItemId=null;save();render();resetItem();updateEditUI();msg('已儲存修改：原紀錄已更新，不會新增重複資料。')}else{data.items.push({id:'i'+Date.now()+Math.random().toString(36).slice(2,6),...val});save();render();$('note').value='';msg('已新增此設備尺寸紀錄。')}}
+function removeItem(id){if(!confirm('確定刪除此筆風管尺寸？'))return;data.items=data.items.filter(x=>x.id!==id);if(editingItemId===id)cancelItemEdit();save();render()}
+function render(){const sel=$('equipmentSelect');sel.innerHTML=data.equipments.length?data.equipments.map(e=>`<option value="${escapeHtml(e.id)}">${escapeHtml(nameOf(e))}</option>`).join(''):'<option value="">尚未建立設備</option>';if(!data.equipments.some(e=>e.id===current))current=data.equipments[0]?.id||'';sel.value=current;const filter=$('filter'),filterVal=filter.value;filter.innerHTML='<option value="all">整個案件（全部設備）</option>'+data.equipments.map(e=>`<option value="${escapeHtml(e.id)}">${escapeHtml(nameOf(e))}</option>`).join('');filter.value=filterVal==='all'||data.equipments.some(e=>e.id===filterVal)?filterVal:'all';renderDevice();renderSummary()}
+function renderDevice(){const e=data.equipments.find(e=>e.id===current);$('equipmentNote').textContent=e?`目前登錄設備：${nameOf(e)}${e.location?'｜'+e.location:''}${e.hrv?'｜全熱：'+e.hrv.model+'（'+e.hrv.flow+' CMH）':''}`:'請先新增或選擇一台設備，再登錄它的多種尺寸。';const items=data.items.filter(x=>x.equipmentId===current);$('currentCount').textContent=`（${items.length} 筆）`;$('deviceRows').innerHTML=items.length?items.map(x=>`<tr><td>${escapeHtml(x.system||'送風 SA')}</td><td>${x.shape==='rect'?'矩形':'圓形'}</td><td>${x.shape==='rect'?`${fmt(x.w,0)} × ${fmt(x.h,0)}`:`Ø${fmt(x.d,0)}`}</td><td>${fmt(x.length)} m</td><td>${x.qty}</td><td>${fmt(x.length*x.qty)} m</td><td>${escapeHtml(x.louver?.label||'不適用')}</td><td>${escapeHtml(x.note||'—')}</td><td><button class="secondary" onclick="editItem('${x.id}')">編輯</button> <button class="danger" onclick="removeItem('${x.id}')">刪除</button></td></tr>`).join(''):'<tr><td colspan="9">此設備尚未新增風管尺寸。</td></tr>'}
+function aggregate(rows){let r=new Map(),c=new Map();for(const x of rows){if(x.shape==='rect'){const a=Math.max(x.w,x.h),b=Math.min(x.w,x.h),key=`${a}x${b}`;let y=r.get(key)||{w:a,h:b,qty:0,meters:0};y.qty+=x.qty;y.meters+=x.length*x.qty;r.set(key,y)}else{const key=x.d;let y=c.get(key)||{d:x.d,qty:0,meters:0};y.qty+=x.qty;y.meters+=x.length*x.qty;c.set(key,y)}}return{rect:[...r.values()].sort((a,b)=>b.w*b.h-a.w*a.h),round:[...c.values()].sort((a,b)=>a.d-b.d)}}
+function area(x){return 2*(x.w+x.h)/1000*x.meters}
+const CAI_FT2_M2=0.09290304, CAI_TAI_M2=0.303*0.303;
+function caiFactor(){return $('caiBasis')?.value==='tai'?CAI_TAI_M2:CAI_FT2_M2}
+function convertCai(from){const f=caiFactor(),m=$('caiM2'),c=$('caiValue');if(from==='m2'){c.value=m.value===''?'':(Number(m.value)/f).toFixed(4)}else{m.value=c.value===''?'':(Number(c.value)*f).toFixed(4)}}
+function updateCai(){const f=caiFactor();$('caiHint').textContent=`1 才 = ${f.toFixed(8)} m²；1 m² ≈ ${(1/f).toFixed(4)} 才。請與材料供應商確認使用哪一種「才」。`;
+convertCai('m2')}
+
+function renderSummary(){const val=$('filter').value;const rows=data.items.filter(x=>val==='all'||x.equipmentId===val);const a=aggregate(rows),waste=Math.max(0,currentWaste())/100,roll=Number($('roll').value)||1.219;const rm=a.rect.reduce((s,x)=>s+x.meters,0),ra=a.rect.reduce((s,x)=>s+area(x),0),cm=a.round.reduce((s,x)=>s+x.meters,0);$('totalRect').textContent=fmt(rm)+' m';$('totalArea').textContent=fmt(ra)+' m²';$('totalRound').textContent=fmt(cm)+' m';$('equipCount').textContent=String(val==='all'?data.equipments.length:data.equipments.some(e=>e.id===val)?1:0);$('rectRows').innerHTML=a.rect.length?a.rect.map(x=>`<tr><td>${fmt(x.w,0)} × ${fmt(x.h,0)}</td><td>${x.qty}</td><td>${fmt(x.meters)} m</td><td>${fmt(area(x))}</td><td>${fmt(area(x)/caiFactor())}</td><td>${fmt(area(x)*(1+waste))}</td><td>${fmt(area(x)*(1+waste)/caiFactor())}</td><td>${fmt(area(x)*(1+waste)/roll)} m</td></tr>`).join(''):'<tr><td colspan="8">無矩形風管紀錄。</td></tr>';$('roundRows').innerHTML=a.round.length?a.round.map(x=>`<tr><td>Ø${fmt(x.d,0)} mm</td><td>${x.qty}</td><td>${fmt(x.meters)} m</td></tr>`).join(''):'<tr><td colspan="3">無圓形風管紀錄。</td></tr>';$('systemRows').innerHTML=data.equipments.filter(e=>val==='all'||e.id===val).flatMap(e=>[...new Set(data.items.filter(x=>x.equipmentId===e.id).map(x=>x.system||'送風 SA'))].map(sys=>{const z=aggregate(data.items.filter(x=>x.equipmentId===e.id&&(x.system||'送風 SA')===sys));return `<tr><td>${escapeHtml(e.name)}</td><td>${escapeHtml(sys)}</td><td>${fmt(z.rect.reduce((t,r)=>t+r.meters,0))} m</td><td>${fmt(z.rect.reduce((t,r)=>t+area(r),0))}</td><td>${fmt(z.round.reduce((t,r)=>t+r.meters,0))} m</td></tr>`})).join('')||'<tr><td colspan="5">尚無風管紀錄。</td></tr>';
+$('louverRows').innerHTML=rows.filter(x=>x.louver).map(x=>{const e=data.equipments.find(e=>e.id===x.equipmentId);return `<tr><td>${escapeHtml(e?.name||'—')}</td><td>${escapeHtml(x.system||'—')}</td><td>${escapeHtml(x.louver.label||'—')}</td><td>${fmt(x.louver.rate,0)}%</td><td>${fmt(x.louver.grossArea,4)} m²</td></tr>`}).join('')||'<tr><td colspan="5">本範圍無百葉紀錄。</td></tr>';
+$('equipRows').innerHTML=data.equipments.filter(e=>val==='all'||e.id===val).map(e=>{const ea=aggregate(data.items.filter(x=>x.equipmentId===e.id));return `<tr><td>${escapeHtml(e.name)}</td><td>${escapeHtml(e.drawing||'—')}</td><td>${fmt(ea.rect.reduce((s,x)=>s+x.meters,0))} m</td><td>${fmt(ea.rect.reduce((s,x)=>s+area(x),0))}</td><td>${fmt(ea.round.reduce((s,x)=>s+x.meters,0))} m</td><td><button class="secondary" onclick="editEquipment('${e.id}')">編輯</button></td></tr>`}).join('')||'<tr><td colspan="6">尚無設備。</td></tr>'}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function download(name,contents,type){const url=URL.createObjectURL(new Blob([contents],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500)}
+function filename(){return (data.project||'HVAC工程').replace(/[\\/:*?"<>|]/g,'_')}
+function exportJSON(){metaChange();download(filename()+'_複合風管案件.json',JSON.stringify({app:'hvac-hybrid-v1',...data},null,2),'application/json;charset=utf-8')}
+async function importJSON(evt){const file=evt.target.files[0];if(!file)return;try{const obj=JSON.parse(await file.text());if(!Array.isArray(obj.equipments)||!Array.isArray(obj.items))throw Error('非此計算器案件格式');if(!confirm('匯入將取代目前裝置中的案件資料，是否繼續？'))return;data={project:String(obj.project||''),projectId:String(obj.projectId||''),designer:String(obj.designer||''),waste:Number(obj.waste??5),roll:Number(obj.roll||1.219),equipments:obj.equipments,items:obj.items};current='';migrateLegacy();save();load();msg('案件匯入成功。')}catch(e){alert('匯入失敗：'+e.message)}finally{evt.target.value=''}}
+function exportCSV(){const a=aggregate(data.items),waste=Math.max(0,currentWaste())/100,roll=Number($('roll').value)||1.219;const rows=[['案件名稱','種類','尺寸(mm)','支／段數','累計延米(m)','理論鐵皮面積(m2)','含損耗面積(m2)','等效卷料延米(m)','才換算基準','理論鐵皮(才)','含損耗鐵皮(才)'],...a.rect.map(x=>[data.project,'矩形',`${x.w}x${x.h}`,x.qty,x.meters.toFixed(3),area(x).toFixed(3),(area(x)*(1+waste)).toFixed(3),(area(x)*(1+waste)/roll).toFixed(3),$('caiBasis').value==='tai'?'台才':'風管英才',(area(x)/caiFactor()).toFixed(3),(area(x)*(1+waste)/caiFactor()).toFixed(3)]),...a.round.map(x=>[data.project,'圓形',`Ø${x.d}`,x.qty,x.meters.toFixed(3),'','','','','',''])];const csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n');download(filename()+'_同尺寸材料彙總.csv',csv,'text/csv;charset=utf-8')}
+function clearProject(){if(!confirm('確定清空整個案件與所有設備、材料紀錄？此動作無法復原，建議先匯出 JSON。'))return;data={project:'',projectId:'',designer:'',waste:5,roll:1.219,equipments:[],items:[]};current='';save();load()}
+load();hrvRestoreCurrent();shapeChange();airShapeChange();toggleLouver();toggleLouverShape();updateCai();
+
+// Optional purchasing estimates, kept separate from duct records and legacy JSON format.
+const MATERIAL_KEY='hvac-hybrid-material-est-v1';
+let matState={gauges:{},sheetL:7,sheetW:3,insulPct:100,insulWaste:5,fit:{},gaugeAuto:'on',gaugeBasis:'long',gaugeLimits:{'26':'304.8','24':'762','22':'1524','20':'2286'}};
+try{const prev=JSON.parse(localStorage.getItem(MATERIAL_KEY)||'null');if(prev&&typeof prev==='object')matState={...matState,...prev,gauges:prev.gauges||{},fit:prev.fit||{},gaugeLimits:{'26':'304.8','24':'762','22':'1524','20':'2286',...(prev.gaugeLimits||{})}}}catch(e){}
+function matSave(){try{localStorage.setItem(MATERIAL_KEY,JSON.stringify(matState))}catch(e){}}
+function matNum(id,def){const el=$(id);return el&&el.value!==''?Number(el.value):def}
+function gaugeConfigRestore(){
+ $('gaugeAuto').value=matState.gaugeAuto||'on';$('gaugeBasis').value=matState.gaugeBasis||'long';
+ for(const [g,defaultMm] of Object.entries({'26':'304.8','24':'762','22':'1524','20':'2286'}))$('gaugeMax'+g).value=matState.gaugeLimits?.[g]||defaultMm;
+}
+function gaugeConfigChanged(){
+ matState.gaugeAuto=$('gaugeAuto').value;matState.gaugeBasis=$('gaugeBasis').value;
+ matState.gaugeLimits=Object.fromEntries(['26','24','22','20'].map(g=>[g,$('gaugeMax'+g).value.trim()]));
+ renderMaterialEst();
+}
+function derivedGauge(x){
+ if(matState.gaugeAuto==='off')return '未指定';
+ const lim=['26','24','22','20'].map(g=>Number(matState.gaugeLimits?.[g]));
+ if(['26','24','22','20'].some(g=>!(Number(matState.gaugeLimits?.[g])>0))||lim.some((v,i)=>i>0&&v<=lim[i-1]))return '未指定';
+ const size=matState.gaugeBasis==='perimeter'?2*(x.w+x.h):Math.max(x.w,x.h);
+ for(let i=0;i<lim.length;i++)if(size<=lim[i])return ['26#','24#','22#','20#'][i];
+ return '18#';
+}
+function selectedGauge(x){const key=x.w+'x'+x.h;return matState.gauges[key]&&matState.gauges[key]!=='自動'?matState.gauges[key]:derivedGauge(x)}
+function matInputsRestore(){for(const [id,key] of [['matSheetL','sheetL'],['matSheetW','sheetW'],['matInsulPct','insulPct'],['matInsulWaste','insulWaste']])$(id).value=matState[key];for(const k of ['Elbow','Tee','Cross']){const t=matState.fit[k]||{};$('fit'+k+'Qty').value=t.qty??0;$('fit'+k+'M').value=t.m??''}}
+function renderMaterialEst(){
+ if(!$('gaugeAssignRows'))return;
+ const scope=$('filter').value;const rows=data.items.filter(x=>scope==='all'||x.equipmentId===scope);const a=aggregate(rows),loss=currentWaste()/100;
+ matState.sheetL=matNum('matSheetL',7);matState.sheetW=matNum('matSheetW',3);matState.insulPct=matNum('matInsulPct',100);matState.insulWaste=matNum('matInsulWaste',5);
+ const gaugeOptions=['自動','未指定','26#','24#','22#','20#','18#'];
+ $('gaugeAssignRows').innerHTML=a.rect.length?a.rect.map(x=>{const key=x.w+'x'+x.h;const gauge=selectedGauge(x);return `<tr><td>${x.w} × ${x.h}</td><td>${fmt(x.meters)} m</td><td>${fmt(area(x)*(1+loss))}</td><td><strong>${fmt(area(x)*(1+loss)/caiFactor())} 才</strong></td><td><div style="font-size:12px;font-weight:750;color:#3d5682;margin-bottom:5px">判定：${gauge}</div><select aria-label="${key} 板厚" onchange="assignMatGauge('${key}',this.value)">${gaugeOptions.map(g=>`<option value="${g}" ${g===(matState.gauges[key]||'自動')?'selected':''}>${g}</option>`).join('')}</select></td></tr>`}).join(''):'<tr><td colspan="5">尚無矩形直管資料。</td></tr>';
+ $('unifiedRows').innerHTML=a.rect.length?a.rect.map(x=>{
+   const key=x.w+'x'+x.h,ga=selectedGauge(x),theory=area(x),net=theory*(1+loss);
+   const pick=`<select aria-label="${key} 板厚番號" onchange="assignMatGauge('${key}',this.value)">${gaugeOptions.map(g=>`<option value="${g}" ${g===(matState.gauges[key]||'自動')?'selected':''}>${g}</option>`).join('')}</select>`;
+   return `<tr><td><strong>${fmt(x.w,0)} × ${fmt(x.h,0)}</strong></td><td>${fmt(x.meters)} m</td><td><div style="font-weight:750;margin-bottom:4px;color:#38577c">${ga}</div>${pick}</td><td>${fmt(theory)}</td><td>${fmt(net)}</td><td><strong>${fmt(net/caiFactor())} 才</strong></td></tr>`;
+ }).join(''):'<tr><td colspan="6">尚無矩形風管紀錄。</td></tr>';
+ const groups={};for(const x of a.rect){const key=x.w+'x'+x.h,g=selectedGauge(x);(groups[g]??={m:0,area:0});groups[g].m+=x.meters;groups[g].area+=area(x)*(1+loss)}
+ const shArea=matState.sheetL*matState.sheetW*0.09290304;
+ const gaugeRows=['26#','24#','22#','20#','18#','未指定'].filter(g=>groups[g]);
+ $('gaugeSummaryRows').innerHTML=gaugeRows.length?gaugeRows.map(g=>{const x=groups[g];return `<tr><td>${g}</td><td>${fmt(x.m)} m</td><td>${fmt(x.area)} m²</td><td>${shArea>0?Math.ceil(x.area/shArea):'請設定板材尺寸'}</td></tr>`}).join(''):'<tr><td colspan="4">尚無資料。</td></tr>';
+ const rectTheory=a.rect.reduce((t,x)=>t+area(x),0),insulArea=rectTheory*Math.max(0,Math.min(100,matState.insulPct))/100*(1+Math.max(0,matState.insulWaste)/100);
+ $('insulResult').textContent=`保溫理論面積：${fmt(rectTheory*matState.insulPct/100)} m² ｜含保溫預留：${fmt(insulArea)} m² ｜換算：${fmt(insulArea/caiFactor())} 才（依目前才制）`;
+ let fitSum=0,complete=true;for(const k of ['Elbow','Tee','Cross']){const qty=matNum('fit'+k+'Qty',0),m=matNum('fit'+k+'M',NaN);matState.fit[k]={qty,m:Number.isFinite(m)?m:''};const value=qty>0&&Number.isFinite(m)?qty*m:0;if(qty>0&&!Number.isFinite(m))complete=false;fitSum+=value;$('fit'+k+'Result').textContent=qty===0?'0 m':Number.isFinite(m)?fmt(value)+' m':'待填等效米數'}
+ $('fitTotal').textContent=complete?`管件估算合計：${fmt(fitSum)} 等效米（未併入直管用料）`:'有管件尚未指定等效米數，不能視為已估算。';
+ matSave();
+}
+function assignMatGauge(key,value){matState.gauges[key]=value;renderMaterialEst()}
+function exportMaterialCSV(){renderMaterialEst();const scope=$('filter').value,a=aggregate(data.items.filter(x=>scope==='all'||x.equipmentId===scope)),loss=currentWaste()/100,sh=matState.sheetL*matState.sheetW*0.09290304;const groups={};for(const x of a.rect){const g=selectedGauge(x);(groups[g]??={m:0,a:0});groups[g].m+=x.meters;groups[g].a+=area(x)*(1+loss)}const rows=[['板厚','直管延米(m)','含預留面積(m2)','初估整張數','備註'],...Object.entries(groups).map(([g,x])=>[g,x.m.toFixed(3),x.a.toFixed(3),sh>0?Math.ceil(x.a/sh):'', '面積推估，未含排版及管件'])];rows.push(['保溫覆蓋率(%)',matState.insulPct],['保溫裁切預留(%)',matState.insulWaste],['單張板長(ft)',matState.sheetL],['單張板寬(ft)',matState.sheetW]);const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');download(filename()+'_材料估料.csv',csv,'text/csv;charset=utf-8')}
+const oldRenderSummary=renderSummary;
+renderSummary=function(){oldRenderSummary();renderMaterialEst()};
+matInputsRestore();gaugeConfigRestore();renderMaterialEst();
+</script></body></html>
